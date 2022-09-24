@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sign in</title>
+</head>
+
+<body>
+    <h1>Google Sign-in</h1>
+    <hr>
+
+    <div id="g_id_onload" data-client_id="1008551783681-8728pofvf4vilfd2dg0se3lpq1u1ej0j.apps.googleusercontent.com"
+        data-auto_prompt="false" data-callback="handleCredentialResponse">
+    </div>
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with"
+        data-shape="rectangular" data-logo_alignment="left">
+    </div>
+
+    <button id="google_signout">
+        Signout
+    </button>
+
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+
+        function handleCredentialResponse(response) {
+            //    //GOOGLE TOKEN: Id_TOKEN
+            //    //console.log('id_token',response.credential);
+
+            //añadimos axios mediante cdn en el script al final que añadimos
+            //este cdn esta en la pagina npm axios
+            const url = (window.location.hostname.includes("localhost"))?
+            "http://localhost:8080/api/auth/google":
+            "https://rest-server-nemezis.herokuapp.com/api/auth/google";
+
+            axios.post(url, {
+                id_token: response.credential
+            })
+                .then(resp => {
+                    console.log(resp.data)
+                    localStorage.setItem("email", resp.data.usuario.correo)
+                })
+                .catch(error => console.log(error))
+
+            //USANDO FETCH
+            // const url = 'http://localhost:8080/api/auth/google'
+
+            // const myHeaders = new Headers();
+            // myHeaders.append("Content-Type", "application/json");
+
+            // const body = { id_token: response.credential };
+
+            // const configurations = {
+            //     method: 'POST',
+            //     headers: myHeaders,
+            //     mode: 'cors',
+            //     cache: 'default',
+            //     body: JSON.stringify(body)
+            // };
+
+            // const myRequest = new Request(url, configurations);
+
+            // //fetch por defecto realiza una peticion get si solo le mandamos el url
+            // //o podemos crear un request para especificar las configuraciones
+            // //y mandarle como parametro esta request
+            // fetch(myRequest)
+            //     .then(resp => resp.json())
+            //     .then(data => console.log(data))
+            //     .catch(console.warn);
+            // console.log('id_token', response.credential);
+
+        }
+
+        //cerrar sesión
+        const button = document.getElementById("google_signout");
+        button.onclick = () => {
+
+            console.log("Hola")
+            console.log(google.accounts.id);
+            google.accounts.id.disableAutoSelect();
+
+            google.accounts.id.revoke(localStorage.getItem("email"), done => {
+                localStorage.clear();
+                location.reload();
+            });
+        }
+
+
+    </script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
+</body>
+
+</html>
